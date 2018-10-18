@@ -27,7 +27,7 @@ public class MainActivityPresenter implements MainActivityMVP.Presenter {
                 this.currencies = NetworkUtils.loadCurrencies();
                 loadCompleted();
             } catch (Exception e) {
-                //TODO show load error
+                loadError(e.getMessage());
             }
         });
         t.start();
@@ -37,6 +37,10 @@ public class MainActivityPresenter implements MainActivityMVP.Presenter {
         if (currencies != null) {
             view.loadCurrenciesCompleted(this.currencies);
         }
+    }
+
+    private void loadError(String message) {
+        view.loadError(message);
     }
 
     @Override

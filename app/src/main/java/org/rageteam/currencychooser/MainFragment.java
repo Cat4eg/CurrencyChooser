@@ -23,14 +23,51 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
     private MainActivityMVP.Presenter presenter;
     private MainFragmentHolder holder;
     private ArrayAdapter<Valute> adapter;
+    private String message;
 
     @Override
     public void loadCurrenciesCompleted(ValCurs currencies) {
         Valute[] valutes = currencies.getValutes().toArray(new Valute[]{});
         adapter = createAdapter(valutes);
-        holder.currencyFromSp.post(() -> {
-            holder.currencyFromSp.setAdapter(adapter);
-            holder.currencyToSp.setAdapter(adapter);
+        getActivity().runOnUiThread(() -> {
+            if (holder != null) {
+                holder.currencyFromSp.setAdapter(adapter);
+                holder.currencyToSp.setAdapter(adapter);
+                enableSelectors();
+            }
+        });
+    }
+
+    @Override
+    public void disableSelectors() {
+        showErrorMessage();
+        holder.currencyFromSp.setEnabled(false);
+        holder.currencyToSp.setEnabled(false);
+    }
+
+    private void showErrorMessage() {
+        if (message != null && message.length() > 0) {
+            holder.errorTV.setVisibility(View.VISIBLE);
+            holder.errorTV.setText(message);
+        } else {
+            holder.errorTV.setVisibility(View.GONE);
+        }
+    }
+
+    public void enableSelectors() {
+        this.message = null;
+        showErrorMessage();
+        holder.currencyFromSp.setEnabled(true);
+        holder.currencyToSp.setEnabled(true);
+    }
+
+    @Override
+    public void loadError(String message) {
+        this.message = message;
+        getActivity().runOnUiThread(() -> {
+            if (holder != null) {
+                showErrorMessage();
+            }
         });
     }
 
@@ -75,6 +112,9 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
         if (adapter != null) {
             holder.currencyFromSp.setAdapter(adapter);
             holder.currencyToSp.setAdapter(adapter);
+            enableSelectors();
+        } else {
+            disableSelectors();
         }
         holder.convertBtn.setOnClickListener(v -> presenter.convert(
                 holder.currencyValET.getText().toString(),
@@ -90,6 +130,7 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
         Spinner currencyToSp;
         Button convertBtn;
         TextView convertedTV;
+        TextView errorTV;
 
         MainFragmentHolder(View view) {
             currencyValET = view.findViewById(R.id.currency_value);
@@ -97,6 +138,7 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
             currencyToSp = view.findViewById(R.id.currency_to);
             convertBtn = view.findViewById(R.id.button_convert);
             convertedTV = view.findViewById(R.id.converted_value);
+            errorTV = view.findViewById(R.id.error);
         }
     }
 }

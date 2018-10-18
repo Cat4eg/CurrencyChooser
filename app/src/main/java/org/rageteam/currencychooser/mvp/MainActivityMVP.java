@@ -7,6 +7,8 @@ public class MainActivityMVP {
     public interface View {
         void showConverted(String converted);
         void loadCurrenciesCompleted(ValCurs currencies);
+        void disableSelectors();
+        void loadError(String message);
     }
 
     public interface Presenter {
