@@ -6,6 +6,17 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
+    <TextView
+        android:id="@+id/converted_value"
+        android:layout_marginRight="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="40sp"
+        android:gravity="right"
+        tools:text="0.0"
+        />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -40,12 +51,11 @@
             android:gravity="center_horizontal"
             android:text="@string/from" />
 
-        <EditText
+        <Spinner
             android:id="@+id/currency_from"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:inputType="number" />
+            android:layout_weight="2"/>
     </LinearLayout>
 
     <LinearLayout
@@ -61,12 +71,11 @@
             android:gravity="center_horizontal"
             android:text="@string/to" />
 
-        <EditText
+        <Spinner
             android:id="@+id/currency_to"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:inputType="number" />
+            android:layout_weight="2" />
     </LinearLayout>
 
     <Button
@@ -75,16 +84,5 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:text="@string/convert" />
-
-    <TextView
-        android:id="@+id/converted_value"
-        android:layout_marginRight="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="40sp"
-        android:gravity="right"
-        tools:text="0.0"
-        />
 
 </LinearLayout>

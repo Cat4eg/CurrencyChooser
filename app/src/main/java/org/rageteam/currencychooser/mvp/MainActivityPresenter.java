@@ -1,6 +1,7 @@
 package org.rageteam.currencychooser.mvp;
 
 import org.rageteam.currencychooser.model.ValCurs;
+import org.rageteam.currencychooser.model.Valute;
 import org.rageteam.currencychooser.util.NetworkUtils;
 
 import java.text.DecimalFormat;
@@ -24,9 +25,7 @@ public class MainActivityPresenter implements MainActivityMVP.Presenter {
         Thread t = new Thread(() -> {
             try {
                 this.currencies = NetworkUtils.loadCurrencies();
-                if (visible) {
-                    loadCompleted();
-                }
+                loadCompleted();
             } catch (Exception e) {
                 //TODO show load error
             }
@@ -44,7 +43,6 @@ public class MainActivityPresenter implements MainActivityMVP.Presenter {
     public void onStart() {
         visible = true;
         showConverted();
-        loadCompleted();
     }
 
     @Override
@@ -53,8 +51,12 @@ public class MainActivityPresenter implements MainActivityMVP.Presenter {
     }
 
     @Override
-    public void convert(String currencyVal, String from, String to) {
-        converted = currencyVal;
+    public void convert(String currencyVal, Valute from, Valute to) {
+        if (currencyVal == null || currencyVal.length() == 0) {
+            return;
+        }
+        double result = from.getValue() * Double.valueOf(currencyVal) / from.getNominal() / to.getValue() * to.getNominal();
+        converted = String.valueOf(result);
         if (visible) {
             showConverted();
         }

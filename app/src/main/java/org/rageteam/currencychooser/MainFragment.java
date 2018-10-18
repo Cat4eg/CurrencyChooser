@@ -8,24 +8,37 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.rageteam.currencychooser.model.ValCurs;
+import org.rageteam.currencychooser.model.Valute;
 import org.rageteam.currencychooser.mvp.MainActivityMVP;
 import org.rageteam.currencychooser.mvp.MainActivityPresenter;
 
 public class MainFragment extends Fragment implements MainActivityMVP.View {
     private MainActivityMVP.Presenter presenter;
     private MainFragmentHolder holder;
+    private ArrayAdapter<Valute> adapter;
 
     @Override
     public void loadCurrenciesCompleted(ValCurs currencies) {
-        holder.currencyFromET.post(() -> {
-           holder.currencyFromET.setText(currencies.getValutes().get(0).getName());
-           holder.currencyToET.setText(currencies.getValutes().get(1).getName());
+        Valute[] valutes = currencies.getValutes().toArray(new Valute[]{});
+        adapter = createAdapter(valutes);
+        holder.currencyFromSp.post(() -> {
+            holder.currencyFromSp.setAdapter(adapter);
+            holder.currencyToSp.setAdapter(adapter);
         });
+    }
+
+    private ArrayAdapter<Valute> createAdapter(Valute[] valutes) {
+        ArrayAdapter<Valute> result = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, valutes);
+        result.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        return result;
     }
 
     @Override
@@ -59,22 +72,29 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_main, container, false);
         holder = new MainFragmentHolder(view);
-        holder.convertBtn.setOnClickListener(v -> presenter.convert(holder.currencyValET.getText().toString(),
-                holder.currencyFromET.getText().toString(), holder.currencyToET.getText().toString()));
-
+        if (adapter != null) {
+            holder.currencyFromSp.setAdapter(adapter);
+            holder.currencyToSp.setAdapter(adapter);
+        }
+        holder.convertBtn.setOnClickListener(v -> presenter.convert(
+                holder.currencyValET.getText().toString(),
+                (Valute)holder.currencyFromSp.getSelectedItem(),
+                (Valute) holder.currencyToSp.getSelectedItem())
+        );
         return view;
     }
 
     private static class MainFragmentHolder {
         EditText currencyValET;
-        EditText currencyFromET;
-        EditText currencyToET;
+        Spinner currencyFromSp;
+        Spinner currencyToSp;
         Button convertBtn;
         TextView convertedTV;
+
         MainFragmentHolder(View view) {
             currencyValET = view.findViewById(R.id.currency_value);
-            currencyFromET = view.findViewById(R.id.currency_from);
-            currencyToET = view.findViewById(R.id.currency_to);
+            currencyFromSp = view.findViewById(R.id.currency_from);
+            currencyToSp = view.findViewById(R.id.currency_to);
             convertBtn = view.findViewById(R.id.button_convert);
             convertedTV = view.findViewById(R.id.converted_value);
         }

@@ -28,10 +28,6 @@ public class ValCurs {
         return valutes;
     }
 
-    public void setValutes(List<Valute> valutes) {
-        this.valutes = valutes;
-    }
-
     @Override
     public String toString() {
         return "ValCurs{" +

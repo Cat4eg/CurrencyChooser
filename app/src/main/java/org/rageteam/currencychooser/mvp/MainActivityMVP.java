@@ -1,12 +1,11 @@
 package org.rageteam.currencychooser.mvp;
 
 import org.rageteam.currencychooser.model.ValCurs;
+import org.rageteam.currencychooser.model.Valute;
 
 public class MainActivityMVP {
     public interface View {
-
         void showConverted(String converted);
-
         void loadCurrenciesCompleted(ValCurs currencies);
     }
 
@@ -14,8 +13,7 @@ public class MainActivityMVP {
         void onStart();
         void onStop();
 
-        void convert(String currencyVal, String from, String to);
-
+        void convert(String currencyVal, Valute from, Valute to);
         void updateCurrencies();
     }
 }

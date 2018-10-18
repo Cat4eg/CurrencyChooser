@@ -35,43 +35,15 @@ public class Valute {
         return name;
     }
 
-    public String getValue() {
-        return value;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setNumCode(String numCode) {
-        this.numCode = numCode;
-    }
-
-    public void setCharCode(String charCode) {
-        this.charCode = charCode;
-    }
-
-    public void setNominal(int nominal) {
-        this.nominal = nominal;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
+    public double getValue() {
+        if (value == null) {
+            throw new RuntimeException("not enough data for currency convertion. for charCode: " + charCode);
+        }
+        return Double.valueOf(value.replace(",", "."));
     }
 
     @Override
     public String toString() {
-        return "Valute{" +
-                "id='" + id + '\'' +
-                ", numCode='" + numCode + '\'' +
-                ", charCode='" + charCode + '\'' +
-                ", nominal=" + nominal +
-                ", name='" + name + '\'' +
-                ", value=" + value +
-                '}';
+        return charCode;
     }
 }
