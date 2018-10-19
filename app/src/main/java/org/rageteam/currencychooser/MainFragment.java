@@ -13,69 +13,29 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import org.rageteam.currencychooser.model.ValCurs;
 import org.rageteam.currencychooser.model.Valute;
 import org.rageteam.currencychooser.mvp.MainActivityMVP;
 import org.rageteam.currencychooser.mvp.MainActivityPresenter;
+import org.rageteam.currencychooser.mvp.Model;
+import org.rageteam.currencychooser.mvp.NetworkRepository;
 
 public class MainFragment extends Fragment implements MainActivityMVP.View {
     private MainActivityMVP.Presenter presenter;
     private MainFragmentHolder holder;
     private ArrayAdapter<Valute> adapter;
-    private String message;
 
     @Override
-    public void loadCurrenciesCompleted(ValCurs currencies) {
-        Valute[] valutes = currencies.getValutes().toArray(new Valute[]{});
+    public void loadCurrenciesCompleted(Valute[] valutes) {
+        if (adapter != null) {
+            return;
+        }
         adapter = createAdapter(valutes);
         getActivity().runOnUiThread(() -> {
-            if (holder != null) {
-                holder.currencyFromSp.setAdapter(adapter);
-                holder.currencyToSp.setAdapter(adapter);
-                enableSelectors();
-            }
+            holder.currencyFromSp.setAdapter(adapter);
+            holder.currencyToSp.setAdapter(adapter);
         });
-    }
-
-    @Override
-    public void disableSelectors() {
-        showErrorMessage();
-        holder.currencyFromSp.setEnabled(false);
-        holder.currencyToSp.setEnabled(false);
-    }
-
-    private void showErrorMessage() {
-        if (message != null && message.length() > 0) {
-            holder.errorTV.setVisibility(View.VISIBLE);
-            holder.errorTV.setText(message);
-        } else {
-            holder.errorTV.setVisibility(View.GONE);
-        }
-    }
-
-    public void enableSelectors() {
-        this.message = null;
-        showErrorMessage();
-        holder.currencyFromSp.setEnabled(true);
-        holder.currencyToSp.setEnabled(true);
-    }
-
-    @Override
-    public void loadError(String message) {
-        this.message = message;
-        getActivity().runOnUiThread(() -> {
-            if (holder != null) {
-                showErrorMessage();
-            }
-        });
-    }
-
-    private ArrayAdapter<Valute> createAdapter(Valute[] valutes) {
-        ArrayAdapter<Valute> result = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, valutes);
-        result.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        return result;
     }
 
     @Override
@@ -87,6 +47,7 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
     public void onStart() {
         super.onStart();
         presenter.onStart();
+        presenter.updateAll();
     }
 
     @Override
@@ -100,8 +61,13 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
 
-        presenter = new MainActivityPresenter(this);
+        presenter = new MainActivityPresenter(this, new Model(new NetworkRepository()));
         presenter.updateCurrencies();
+    }
+
+    @Override
+    public void showError(String message) {
+        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
     }
 
     @Nullable
@@ -109,19 +75,37 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_main, container, false);
         holder = new MainFragmentHolder(view);
+        holder.convertBtn.setOnClickListener(v -> presenter.convert());
         if (adapter != null) {
             holder.currencyFromSp.setAdapter(adapter);
             holder.currencyToSp.setAdapter(adapter);
-            enableSelectors();
-        } else {
-            disableSelectors();
         }
-        holder.convertBtn.setOnClickListener(v -> presenter.convert(
-                holder.currencyValET.getText().toString(),
-                (Valute)holder.currencyFromSp.getSelectedItem(),
-                (Valute) holder.currencyToSp.getSelectedItem())
-        );
         return view;
+    }
+
+    @Override
+    public Valute getValuteTo() {
+        return (Valute) holder.currencyToSp.getSelectedItem();
+    }
+
+    @Override
+    public Valute getValuteFrom() {
+        return (Valute) holder.currencyFromSp.getSelectedItem();
+    }
+
+    @Override
+    public String getCurrencyVal() {
+        return holder.currencyValET.getText().toString();
+    }
+
+    private ArrayAdapter<Valute> createAdapter(Valute[] valutes) {
+        if (adapter != null) {
+            return adapter;
+        }
+        ArrayAdapter<Valute> result = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, valutes);
+        result.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        return result;
     }
 
     private static class MainFragmentHolder {
@@ -130,7 +114,6 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
         Spinner currencyToSp;
         Button convertBtn;
         TextView convertedTV;
-        TextView errorTV;
 
         MainFragmentHolder(View view) {
             currencyValET = view.findViewById(R.id.currency_value);
@@ -138,7 +121,6 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
             currencyToSp = view.findViewById(R.id.currency_to);
             convertBtn = view.findViewById(R.id.button_convert);
             convertedTV = view.findViewById(R.id.converted_value);
-            errorTV = view.findViewById(R.id.error);
         }
     }
 }

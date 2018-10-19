@@ -1,52 +1,55 @@
 package org.rageteam.currencychooser.mvp;
 
-import org.rageteam.currencychooser.model.ValCurs;
 import org.rageteam.currencychooser.model.Valute;
-import org.rageteam.currencychooser.util.NetworkUtils;
-
-import java.text.DecimalFormat;
-import java.util.concurrent.TimeUnit;
 
 public class MainActivityPresenter implements MainActivityMVP.Presenter {
-    private static final String CURRENCY_FORMAT = "###,###.00";
-
-    private boolean visible;
     private MainActivityMVP.View view;
-    private String converted = "";
+    private MainActivityMVP.Model model;
+    private boolean visible;
 
-    private ValCurs currencies;
-
-    public MainActivityPresenter(MainActivityMVP.View view) {
+    public MainActivityPresenter(MainActivityMVP.View view, MainActivityMVP.Model model) {
         this.view = view;
+        this.model = model;
+    }
+
+    @Override
+    public void convert() {
+        model.updateConverted(view.getCurrencyVal(), view.getValuteFrom(), view.getValuteTo());
+        if (visible) {
+            showConverted();
+        }
+    }
+
+    @Override
+    public void updateAll() {
+        if (visible) {
+            showConverted();
+            loadCompleted();
+        }
     }
 
     @Override
     public void updateCurrencies() {
-        Thread t = new Thread(() -> {
-            try {
-                this.currencies = NetworkUtils.loadCurrencies();
-                loadCompleted();
-            } catch (Exception e) {
-                loadError(e.getMessage());
+        model.loadValutes(new MainActivityMVP.Callback<Valute[]>() {
+            @Override
+            public void onSuccess(Valute[] result) {
+                if (visible) {
+                    loadCompleted();
+                }
             }
-        });
-        t.start();
-    }
 
-    private void loadCompleted() {
-        if (currencies != null) {
-            view.loadCurrenciesCompleted(this.currencies);
-        }
-    }
-
-    private void loadError(String message) {
-        view.loadError(message);
+            @Override
+            public void onFailure(String message, Throwable t) {
+                if (visible) {
+                    view.showError(message);
+                }
+            }
+        }, false);
     }
 
     @Override
     public void onStart() {
         visible = true;
-        showConverted();
     }
 
     @Override
@@ -54,23 +57,16 @@ public class MainActivityPresenter implements MainActivityMVP.Presenter {
         visible = false;
     }
 
-    @Override
-    public void convert(String currencyVal, Valute from, Valute to) {
-        if (currencyVal == null || currencyVal.length() == 0) {
-            return;
-        }
-        double result = from.getValue() * Double.valueOf(currencyVal) / from.getNominal() / to.getValue() * to.getNominal();
-        converted = String.valueOf(result);
-        if (visible) {
-            showConverted();
+
+    private void loadCompleted() {
+        if (model.getValutes() != null) {
+            view.loadCurrenciesCompleted(model.getValutes());
         }
     }
 
     private void showConverted() {
-        if (converted == null || converted.length() == 0) {
-            return;
+        if (visible) {
+            view.showConverted(model.getConverted());
         }
-        DecimalFormat formatter = new DecimalFormat(CURRENCY_FORMAT);
-        view.showConverted(formatter.format(Double.valueOf(converted)));
     }
 }
