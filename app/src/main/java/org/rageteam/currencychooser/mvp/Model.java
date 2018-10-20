@@ -4,9 +4,13 @@ import org.rageteam.currencychooser.model.ValCurs;
 import org.rageteam.currencychooser.model.Valute;
 
 import java.text.DecimalFormat;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.DoubleStream;
 
 public class Model implements MainActivityMVP.Model {
     private static final String CURRENCY_FORMAT = "###,###.00";
+    private static final String CURRENCY_FORMAT_BELOW_1 = "0.0000";
     private static final String DEFAULT_VALUE = "";
 
     private ValCurs valCurs;
@@ -25,7 +29,7 @@ public class Model implements MainActivityMVP.Model {
                 @Override
                 public void onSuccess(ValCurs result) {
                     valCurs = result;
-                    callback.onSuccess(valCurs.getValutes().toArray(new Valute[]{}));
+                    callback.onSuccess(sort(valCurs.getValutes()).toArray(new Valute[]{}));
                 }
 
                 @Override
@@ -34,14 +38,19 @@ public class Model implements MainActivityMVP.Model {
                 }
             });
         } else {
-            callback.onSuccess(valCurs.getValutes().toArray(new Valute[]{}));
+            callback.onSuccess(sort(valCurs.getValutes()).toArray(new Valute[]{}));
         }
     }
 
 
     @Override
     public Valute[] getValutes() {
-        return valCurs == null ? null : valCurs.getValutes().toArray(new Valute[]{});
+        return valCurs == null ? null : sort(valCurs.getValutes()).toArray(new Valute[]{});
+    }
+
+    private List<Valute> sort(List<Valute> valutes) {
+        Collections.sort(valutes);
+        return valutes;
     }
 
     @Override
@@ -58,7 +67,9 @@ public class Model implements MainActivityMVP.Model {
         if (converted == null || converted.trim().length() == 0) {
             return DEFAULT_VALUE;
         }
-        DecimalFormat formatter = new DecimalFormat(CURRENCY_FORMAT);
-        return formatter.format(Double.valueOf(converted));
+        Double value = Double.valueOf(converted);
+        DecimalFormat formatter = value < 1 ? new DecimalFormat(CURRENCY_FORMAT_BELOW_1)
+                : new DecimalFormat(CURRENCY_FORMAT);
+        return formatter.format(value);
     }
 }

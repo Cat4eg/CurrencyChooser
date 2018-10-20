@@ -57,6 +57,19 @@ public class MainActivityPresenter implements MainActivityMVP.Presenter {
         visible = false;
     }
 
+    @Override
+    public void updateNameFrom(Valute from) {
+        if (visible) {
+            view.setNameFrom(from.getName());
+        }
+    }
+
+    @Override
+    public void updateNameTo(Valute to) {
+        if (visible) {
+            view.setNameTo(to.getName());
+        }
+    }
 
     private void loadCompleted() {
         if (model.getValutes() != null) {

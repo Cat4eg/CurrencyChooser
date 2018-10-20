@@ -14,6 +14,10 @@ public interface MainActivityMVP {
         String getCurrencyVal();
         Valute getValuteFrom();
         Valute getValuteTo();
+
+        void setNameFrom(String from);
+
+        void setNameTo(String to);
     }
 
     interface Presenter {
@@ -26,6 +30,10 @@ public interface MainActivityMVP {
         void updateCurrencies();
 
         void updateAll();
+
+        void updateNameFrom(Valute from);
+
+        void updateNameTo(Valute to);
     }
 
     interface Model {

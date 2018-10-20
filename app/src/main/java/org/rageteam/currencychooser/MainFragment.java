@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -80,6 +81,29 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
             holder.currencyFromSp.setAdapter(adapter);
             holder.currencyToSp.setAdapter(adapter);
         }
+        holder.currencyFromSp.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                presenter.updateNameFrom((Valute) parent.getItemAtPosition(position));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                //do nothing
+            }
+        });
+
+        holder.currencyToSp.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                presenter.updateNameTo((Valute) parent.getItemAtPosition(position));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                //do nothing
+            }
+        });
         return view;
     }
 
@@ -98,13 +122,22 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
         return holder.currencyValET.getText().toString();
     }
 
+    @Override
+    public void setNameFrom(String from) {
+        holder.nameFromTV.setText(from);
+    }
+
+    @Override
+    public void setNameTo(String to) {
+        holder.nameToTV.setText(to);
+    }
+
     private ArrayAdapter<Valute> createAdapter(Valute[] valutes) {
         if (adapter != null) {
             return adapter;
         }
         ArrayAdapter<Valute> result = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, valutes);
         result.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
         return result;
     }
 
@@ -114,6 +147,8 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
         Spinner currencyToSp;
         Button convertBtn;
         TextView convertedTV;
+        TextView nameFromTV;
+        TextView nameToTV;
 
         MainFragmentHolder(View view) {
             currencyValET = view.findViewById(R.id.currency_value);
@@ -121,6 +156,8 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
             currencyToSp = view.findViewById(R.id.currency_to);
             convertBtn = view.findViewById(R.id.button_convert);
             convertedTV = view.findViewById(R.id.converted_value);
+            nameFromTV = view.findViewById(R.id.name_from);
+            nameToTV = view.findViewById(R.id.name_to);
         }
     }
 }

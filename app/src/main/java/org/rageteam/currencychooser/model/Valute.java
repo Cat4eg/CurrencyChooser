@@ -1,11 +1,13 @@
 package org.rageteam.currencychooser.model;
 
+import android.support.annotation.NonNull;
+
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 
 @Root(name = "Valute")
-public class Valute {
+public class Valute implements Comparable<Valute> {
     @Attribute(name = "ID")
     private String id;
     @Element(name="NumCode")
@@ -45,5 +47,10 @@ public class Valute {
     @Override
     public String toString() {
         return charCode;
+    }
+
+    @Override
+    public int compareTo(@NonNull Valute o) {
+        return charCode.compareTo(o.charCode);
     }
 }
