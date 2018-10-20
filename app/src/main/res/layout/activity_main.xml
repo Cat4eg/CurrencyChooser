@@ -54,13 +54,11 @@
             android:layout_height="wrap_content"
             android:layout_weight="3" />
 
-        <TextView
-            android:layout_width="0dp"
+        <ImageView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center_horizontal"
-            android:text="@string/to"
-            android:textStyle="bold" />
+            android:src="@drawable/ic_arrow_forward_black_24dp"
+            />
 
         <Spinner
             android:id="@+id/currency_to"

@@ -36,6 +36,7 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
         getActivity().runOnUiThread(() -> {
             holder.currencyFromSp.setAdapter(adapter);
             holder.currencyToSp.setAdapter(adapter);
+            enableCurrencies();
         });
     }
 
@@ -80,6 +81,11 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
         if (adapter != null) {
             holder.currencyFromSp.setAdapter(adapter);
             holder.currencyToSp.setAdapter(adapter);
+            enableCurrencies();
+        } else {
+            holder.currencyFromSp.setEnabled(false);
+            holder.currencyToSp.setEnabled(false);
+            holder.convertBtn.setEnabled(false);
         }
         holder.currencyFromSp.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -105,6 +111,12 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
             }
         });
         return view;
+    }
+
+    private void enableCurrencies() {
+        holder.currencyFromSp.setEnabled(true);
+        holder.currencyToSp.setEnabled(true);
+        holder.convertBtn.setEnabled(true);
     }
 
     @Override
