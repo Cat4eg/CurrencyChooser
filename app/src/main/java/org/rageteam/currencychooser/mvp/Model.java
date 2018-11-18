@@ -29,7 +29,8 @@ public class Model implements MainActivityMVP.Model {
                 @Override
                 public void onSuccess(ValCurs result) {
                     valCurs = result;
-                    callback.onSuccess(sort(valCurs.getValutes()).toArray(new Valute[]{}));
+                    valCurs.getValutes().add(0, Valute.RUR);
+                    callback.onSuccess(getValutes());
                 }
 
                 @Override

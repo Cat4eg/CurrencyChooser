@@ -1,6 +1,7 @@
 package org.rageteam.currencychooser.mvp;
 
 import org.rageteam.currencychooser.model.ValCurs;
+import org.rageteam.currencychooser.model.Valute;
 import org.rageteam.currencychooser.util.NetworkUtils;
 
 public class NetworkRepository implements MainActivityMVP.Repository {
@@ -9,7 +10,8 @@ public class NetworkRepository implements MainActivityMVP.Repository {
         synchronized (this) {
             Thread t = new Thread(() -> {
                 try {
-                    callback.onSuccess(NetworkUtils.loadCurrencies());
+                    ValCurs result = NetworkUtils.loadCurrencies();
+                    callback.onSuccess(result);
                 } catch (Exception e) {
                     callback.onFailure("Error in loading or parsing", e);
                 }

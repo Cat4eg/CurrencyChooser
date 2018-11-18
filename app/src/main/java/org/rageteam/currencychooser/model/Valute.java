@@ -8,11 +8,22 @@ import org.simpleframework.xml.Root;
 
 @Root(name = "Valute")
 public class Valute implements Comparable<Valute> {
+    public static Valute RUR = new Valute();
+
+    static {
+        RUR.id = "1";
+        RUR.charCode = "RUR";
+        RUR.name = "Российский рубль";
+        RUR.nominal = 1;
+        RUR.numCode = "810";
+        RUR.value = "1.0";
+    }
+
     @Attribute(name = "ID")
     private String id;
-    @Element(name="NumCode")
+    @Element(name = "NumCode")
     private String numCode;
-    @Element(name="CharCode")
+    @Element(name = "CharCode")
     private String charCode;
     @Element(name = "Nominal")
     private int nominal;

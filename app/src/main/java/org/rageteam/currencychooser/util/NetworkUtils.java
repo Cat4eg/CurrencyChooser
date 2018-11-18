@@ -22,7 +22,9 @@ public class NetworkUtils {
 
             return serializer.read(ValCurs.class, is);
         } finally {
-            con.disconnect();
+            if (con != null) {
+                con.disconnect();
+            }
         }
     }
 }

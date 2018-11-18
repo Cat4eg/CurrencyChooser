@@ -13,8 +13,12 @@ public class MainActivityPresenter implements MainActivityMVP.Presenter {
     }
 
     @Override
-    public void convert() {
-        model.updateConverted(view.getCurrencyVal(), view.getValuteFrom(), view.getValuteTo());
+    public void convert(boolean forward) {
+        if (forward) {
+            model.updateConverted(view.getCurrencyVal(), view.getValuteFrom(), view.getValuteTo());
+        } else {
+            model.updateConverted(view.getCurrencyVal(), view.getValuteTo(), view.getValuteFrom());
+        }
         if (visible) {
             showConverted();
         }
@@ -69,6 +73,11 @@ public class MainActivityPresenter implements MainActivityMVP.Presenter {
         if (visible) {
             view.setNameTo(to.getName());
         }
+    }
+
+    @Override
+    public void adapterUpdated(boolean done) {
+        view.enableCurrencies(done);
     }
 
     private void loadCompleted() {

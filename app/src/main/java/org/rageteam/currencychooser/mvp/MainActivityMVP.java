@@ -13,6 +13,9 @@ public interface MainActivityMVP {
 
         String getCurrencyVal();
         Valute getValuteFrom();
+
+        void enableCurrencies(boolean enable);
+
         Valute getValuteTo();
 
         void setNameFrom(String from);
@@ -25,7 +28,7 @@ public interface MainActivityMVP {
 
         void onStop();
 
-        void convert();
+        void convert(boolean forward);
 
         void updateCurrencies();
 
@@ -34,6 +37,8 @@ public interface MainActivityMVP {
         void updateNameFrom(Valute from);
 
         void updateNameTo(Valute to);
+
+        void adapterUpdated(boolean done);
     }
 
     interface Model {

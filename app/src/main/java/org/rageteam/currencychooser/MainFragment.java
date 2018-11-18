@@ -4,7 +4,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,13 +21,12 @@ import android.widget.Toast;
 import org.rageteam.currencychooser.model.Valute;
 import org.rageteam.currencychooser.mvp.MainActivityMVP;
 import org.rageteam.currencychooser.mvp.MainActivityPresenter;
-import org.rageteam.currencychooser.mvp.Model;
-import org.rageteam.currencychooser.mvp.NetworkRepository;
 
 public class MainFragment extends Fragment implements MainActivityMVP.View {
     private MainActivityMVP.Presenter presenter;
     private MainFragmentHolder holder;
     private ArrayAdapter<Valute> adapter;
+    private boolean convertForward;
 
     @Override
     public void loadCurrenciesCompleted(Valute[] valutes) {
@@ -33,11 +34,13 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
             return;
         }
         adapter = createAdapter(valutes);
-        getActivity().runOnUiThread(() -> {
-            holder.currencyFromSp.setAdapter(adapter);
-            holder.currencyToSp.setAdapter(adapter);
-            enableCurrencies();
-        });
+        getActivity().runOnUiThread(this::setAdapter);
+    }
+
+    private void setAdapter() {
+        holder.currencyFromSp.setAdapter(adapter);
+        holder.currencyToSp.setAdapter(adapter);
+        presenter.adapterUpdated(true);
     }
 
     @Override
@@ -63,7 +66,9 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
 
-        presenter = new MainActivityPresenter(this, new Model(new NetworkRepository()));
+        convertForward = true;
+
+        presenter = new MainActivityPresenter(this, ((App) getActivity().getApplication()).model());
         presenter.updateCurrencies();
     }
 
@@ -77,20 +82,38 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_main, container, false);
         holder = new MainFragmentHolder(view);
-        holder.convertBtn.setOnClickListener(v -> presenter.convert());
+        holder.convertBtn.setOnClickListener(v -> presenter.convert(convertForward));
         if (adapter != null) {
-            holder.currencyFromSp.setAdapter(adapter);
-            holder.currencyToSp.setAdapter(adapter);
-            enableCurrencies();
+            setAdapter();
         } else {
-            holder.currencyFromSp.setEnabled(false);
-            holder.currencyToSp.setEnabled(false);
-            holder.convertBtn.setEnabled(false);
+            presenter.adapterUpdated(false);
         }
+        holder.currencyValET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                //do nothing
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //do nothing
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                presenter.convert(convertForward);
+            }
+        });
+        holder.direction.setImageResource(convertForward ? R.drawable.ic_arrow_forward_black_24dp
+                : R.drawable.ic_arrow_back_black_24dp);
+        holder.direction.setOnClickListener(v -> {
+            flipDirection();
+        });
         holder.currencyFromSp.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 presenter.updateNameFrom((Valute) parent.getItemAtPosition(position));
+                presenter.convert(convertForward);
             }
 
             @Override
@@ -103,6 +126,7 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 presenter.updateNameTo((Valute) parent.getItemAtPosition(position));
+                presenter.convert(convertForward);
             }
 
             @Override
@@ -113,10 +137,21 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
         return view;
     }
 
-    private void enableCurrencies() {
-        holder.currencyFromSp.setEnabled(true);
-        holder.currencyToSp.setEnabled(true);
-        holder.convertBtn.setEnabled(true);
+    private void flipDirection() {
+        convertForward = !convertForward;
+        if (convertForward) {
+            holder.direction.setImageResource(R.drawable.ic_arrow_forward_black_24dp);
+        } else {
+            holder.direction.setImageResource(R.drawable.ic_arrow_back_black_24dp);
+        }
+        presenter.convert(convertForward);
+    }
+
+    @Override
+    public void enableCurrencies(boolean enable) {
+        holder.currencyFromSp.setEnabled(enable);
+        holder.currencyToSp.setEnabled(enable);
+        holder.convertBtn.setEnabled(enable);
     }
 
     @Override
@@ -161,6 +196,7 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
         TextView convertedTV;
         TextView nameFromTV;
         TextView nameToTV;
+        ImageView direction;
 
         MainFragmentHolder(View view) {
             currencyValET = view.findViewById(R.id.currency_value);
@@ -170,6 +206,7 @@ public class MainFragment extends Fragment implements MainActivityMVP.View {
             convertedTV = view.findViewById(R.id.converted_value);
             nameFromTV = view.findViewById(R.id.name_from);
             nameToTV = view.findViewById(R.id.name_to);
+            direction = view.findViewById(R.id.direction);
         }
     }
 }
